@@ -62,7 +62,11 @@ class AttendanceImportController extends Controller
                         // 5. firstOrCreate Student scoped to this Group
                         $student = Student::firstOrCreate(
                             ['matrix_number' => $matrixNumber],
-                            ['name' => $name, 'group_id' => $group->id]
+                            [
+                                'name' => $name, 
+                                'group_id' => $group->id,
+                                'email' => strtolower($matrixNumber) . '@example.com'
+                            ]
                         );
 
                         // If the student exists but belongs to another group, technically this violates "1 student 1 group".
