@@ -17,7 +17,10 @@ class EmailVerificationNotificationController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $request->user()->forceFill(['verification_code' => $code])->save();
+        
+        \Illuminate\Support\Facades\Mail::to($request->user()->email)->send(new \App\Mail\VerificationCodeMail($code));
 
         return back()->with('status', 'verification-link-sent');
     }
