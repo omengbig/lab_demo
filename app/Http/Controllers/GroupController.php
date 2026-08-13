@@ -15,7 +15,7 @@ class GroupController extends Controller
         return redirect()->route('semesters.show', $semester)->with('success', 'Group created successfully.');
     }
 
-    public function show(Group $group)
+    public function show(Group $group, Request $request)
     {
         // Eager load everything needed for the grid and the stats
         $group->load([
@@ -27,6 +27,22 @@ class GroupController extends Controller
 
         $sessions = $group->attendanceSessions;
         $students = $group->students;
+
+        // Sorting
+        $sort = $request->query('sort', 'name-asc');
+        if ($sort === 'name-asc') {
+            $students = $students->sortBy('name');
+        } elseif ($sort === 'name-desc') {
+            $students = $students->sortByDesc('name');
+        }
+
+        // Filtering by Status
+        $filter = $request->query('filter');
+        if ($filter === 'at-risk') {
+            $students = $students->filter(fn($student) => $student->is_at_risk);
+        } elseif ($filter === 'good-standing') {
+            $students = $students->filter(fn($student) => !$student->is_at_risk);
+        }
 
         return view('groups.show', compact('group', 'sessions', 'students'));
     }

@@ -31,14 +31,37 @@
             <!-- Master Attendance Grid -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-medium mb-4">Master Attendance Grid</h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                        <h3 class="text-lg font-medium">Master Attendance Grid</h3>
+                        
+                        <!-- Filters -->
+                        <div class="flex space-x-2">
+                            <a href="{{ route('groups.show', ['group' => $group, 'filter' => request('filter') === 'at-risk' ? '' : 'at-risk', 'sort' => request('sort')]) }}" 
+                               class="px-4 py-2 text-sm font-medium rounded-md border transition ease-in-out duration-150 {{ request('filter') === 'at-risk' ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}">
+                                {{ request('filter') === 'at-risk' ? 'Showing: At-Risk Only' : 'Show At-Risk Only' }}
+                            </a>
+                            <a href="{{ route('groups.show', ['group' => $group, 'filter' => request('filter') === 'good-standing' ? '' : 'good-standing', 'sort' => request('sort')]) }}" 
+                               class="px-4 py-2 text-sm font-medium rounded-md border transition ease-in-out duration-150 {{ request('filter') === 'good-standing' ? 'bg-green-600 text-white border-green-600 hover:bg-green-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}">
+                                {{ request('filter') === 'good-standing' ? 'Showing: Good Standing Only' : 'Show Good Standing' }}
+                            </a>
+                        </div>
+                    </div>
 
                     <div class="overflow-x-auto pb-4">
                         <table class="min-w-full divide-y divide-gray-200 border">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrix Number</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <a href="{{ route('groups.show', ['group' => $group, 'filter' => request('filter'), 'sort' => request('sort') === 'name-asc' ? 'name-desc' : 'name-asc']) }}" class="flex items-center space-x-1 hover:text-gray-900 transition">
+                                            <span>Name</span>
+                                            @if(request('sort') === 'name-asc' || !request('sort'))
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                            @else
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     
