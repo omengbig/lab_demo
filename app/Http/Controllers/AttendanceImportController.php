@@ -59,20 +59,14 @@ class AttendanceImportController extends Controller
                             $status = 'late';
                         }
 
-                        // 5. firstOrCreate Student scoped to this Group
-                        $student = Student::firstOrCreate(
-                            ['matrix_number' => $matrixNumber],
-                            [
-                                'name' => $name, 
-                                'group_id' => $group->id,
-                                'email' => strtolower($matrixNumber) . '@example.com'
-                            ]
-                        );
+                        // 5. Find existing student in the group's roster
+                        $student = Student::where('matrix_number', $matrixNumber)
+                                          ->where('group_id', $group->id)
+                                          ->first();
 
-                        // If the student exists but belongs to another group, technically this violates "1 student 1 group".
-                        // Assuming the DB structure where group_id is in students table, we should update their group_id if it's missing.
-                        if (!$student->group_id) {
-                            $student->update(['group_id' => $group->id]);
+                        if (!$student) {
+                            // If student is not registered in the Master Roster, skip them!
+                            continue;
                         }
 
                         // 6. create Attendance

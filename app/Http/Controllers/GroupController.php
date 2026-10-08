@@ -11,8 +11,8 @@ class GroupController extends Controller
     public function store(Request $request, Semester $semester)
     {
         $request->validate(['name' => 'required|string|max:255']);
-        $semester->groups()->create($request->only('name'));
-        return redirect()->route('semesters.show', $semester)->with('success', 'Group created successfully.');
+        $group = $semester->groups()->create($request->only('name'));
+        return redirect()->route('groups.show', $group)->with('success', 'Group created successfully! You can now import your Master Roster here.');
     }
 
     public function show(Group $group, Request $request)
@@ -44,6 +44,31 @@ class GroupController extends Controller
             $students = $students->filter(fn($student) => !$student->is_at_risk);
         }
 
-        return view('groups.show', compact('group', 'sessions', 'students'));
+        // Chart Data Calculation
+        $totalSessions = $sessions->count();
+        $totalStudentsForChart = $group->students->count();
+        $totalPossible = $totalSessions * $totalStudentsForChart;
+        
+        $totalPresent = $group->students->sum(function($student) {
+            return $student->attendances->whereIn('status', ['present', 'late'])->count();
+        });
+        $totalAbsent = $totalPossible > 0 ? ($totalPossible - $totalPresent) : 0;
+
+        return view('groups.show', compact('group', 'sessions', 'students', 'totalPresent', 'totalAbsent'));
+    }
+
+    public function update(Group $group, Request $request)
+    {
+        abort_if($group->semester->user_id !== $request->user()->id, 403);
+        $request->validate(['name' => 'required|string|max:255']);
+        $group->update($request->only('name'));
+        return back()->with('success', 'Group name updated successfully.');
+    }
+
+    public function destroy(Group $group, Request $request)
+    {
+        abort_if($group->semester->user_id !== $request->user()->id, 403);
+        $group->delete();
+        return back()->with('success', 'Group deleted successfully.');
     }
 }

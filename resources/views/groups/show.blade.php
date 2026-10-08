@@ -21,12 +21,57 @@
                     <h3 class="text-xl font-bold text-gray-900">Group Hub: {{ $group->name }}</h3>
                     <p class="text-sm text-gray-500">View weekly attendance grids and import new sheets.</p>
                 </div>
-                <div>
+                <div class="flex space-x-2">
+                    <a href="{{ route('groups.roster', $group) }}" class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600 focus:bg-yellow-600 active:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150" title="Manage Name List">
+                        Manage Roster
+                    </a>
+                    <a href="{{ route('groups.export.excel', $group) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150" title="Export Excel">
+                        Export CSV
+                    </a>
+                    <a href="{{ route('groups.export.pdf', $group) }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150" title="Export PDF">
+                        Export PDF
+                    </a>
                     <a href="{{ route('groups.import', $group) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         Import Attendance PDF
                     </a>
                 </div>
             </div>
+
+            <!-- Analytics Chart -->
+            @if($totalPresent > 0 || $totalAbsent > 0)
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900 flex flex-col items-center">
+                    <h3 class="text-lg font-medium mb-4">Overall Attendance Overview</h3>
+                    <div class="w-64 h-64">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var ctx = document.getElementById('attendanceChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Present', 'Absent'],
+                            datasets: [{
+                                data: [{{ $totalPresent }}, {{ $totalAbsent }}],
+                                backgroundColor: ['#10B981', '#EF4444'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+                });
+            </script>
+            @endif
 
             <!-- Master Attendance Grid -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -51,6 +96,7 @@
                         <table class="min-w-full divide-y divide-gray-200 border">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrix Number</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         <a href="{{ route('groups.show', ['group' => $group, 'filter' => request('filter'), 'sort' => request('sort') === 'name-asc' ? 'name-desc' : 'name-asc']) }}" class="flex items-center space-x-1 hover:text-gray-900 transition">
@@ -75,6 +121,9 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($students as $student)
                                     <tr class="{{ $student->is_at_risk ? 'bg-red-50' : 'bg-green-50' }} hover:opacity-90 transition duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $loop->iteration }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }}">
                                             {{ $student->matrix_number }}
                                         </td>
@@ -106,13 +155,20 @@
                                                     <span class="text-green-500 font-bold text-lg" title="Present">✔️</span>
                                                 @else
                                                     <span class="text-red-500 font-bold text-lg" title="Absent">❌</span>
+                                                    <div class="mt-1 flex justify-center">
+                                                        <form action="{{ route('attendances.reason', ['student' => $student->id, 'session' => $session->id]) }}" method="POST" class="flex items-center space-x-1">
+                                                            @csrf
+                                                            <input type="text" name="reason" value="{{ $attendance ? $attendance->reason : '' }}" class="text-xs border-gray-300 rounded w-20 px-1 py-0.5 focus:ring-indigo-500" placeholder="Reason">
+                                                            <button type="submit" class="text-blue-500 hover:text-blue-700 bg-gray-100 border border-gray-200 rounded px-1" title="Save Reason">💾</button>
+                                                        </form>
+                                                    </div>
                                                 @endif
                                             </td>
                                         @endforeach
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 4 + $sessions->count() }}" class="px-6 py-12 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <td colspan="{{ 5 + $sessions->count() }}" class="px-6 py-12 whitespace-nowrap text-sm text-gray-500 text-center">
                                             No attendance data found in this group. Import a PDF to populate the grid.
                                         </td>
                                     </tr>

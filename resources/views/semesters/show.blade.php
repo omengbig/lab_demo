@@ -36,15 +36,30 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @forelse($semester->groups as $group)
-                            <a href="{{ route('groups.show', $group) }}" class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-50 transition flex justify-between items-center">
-                                <div>
-                                    <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900">{{ $group->name }}</h5>
+                            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-50 transition flex justify-between items-center">
+                                <a href="{{ route('groups.show', $group) }}" class="block flex-1">
+                                    <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 hover:text-blue-600">{{ $group->name }}</h5>
                                     <p class="text-sm text-gray-600">{{ $group->students_count }} Students</p>
+                                </a>
+                                <div class="flex items-center space-x-2 ml-4">
+                                    <button onclick="let newName = prompt('Enter new group name:', '{{ $group->name }}'); if(newName && newName !== '{{ $group->name }}') { document.getElementById('edit-group-{{ $group->id }}-name').value = newName; document.getElementById('edit-group-{{ $group->id }}').submit(); }" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded border border-gray-300 transition">
+                                        Edit
+                                    </button>
+                                    <form action="{{ route('groups.destroy', $group) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this group? All attendance records will be lost.')" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded border border-red-300 transition">
+                                            Delete
+                                        </button>
+                                    </form>
+                                    
+                                    <form id="edit-group-{{ $group->id }}" action="{{ route('groups.update', $group) }}" method="POST" class="hidden">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="name" id="edit-group-{{ $group->id }}-name" value="">
+                                    </form>
                                 </div>
-                                <div>
-                                    <span class="text-blue-600 font-medium">View Hub &rarr;</span>
-                                </div>
-                            </a>
+                            </div>
                         @empty
                             <p class="text-sm text-gray-500">No groups exist in this semester yet. Create one above.</p>
                         @endforelse
