@@ -92,13 +92,22 @@
                         </div>
                     </div>
 
+                    <style>
+                        .sticky-col { position: sticky; z-index: 10; }
+                        thead .sticky-col { z-index: 20; }
+                        .sticky-col-1 { left: 0px; width: 56px; min-width: 56px; max-width: 56px; }
+                        .sticky-col-2 { left: 56px; width: 145px; min-width: 145px; max-width: 145px; }
+                        .sticky-col-3 { left: 201px; width: 220px; min-width: 220px; max-width: 220px; }
+                        .sticky-col-4 { left: 421px; width: 85px; min-width: 85px; max-width: 85px; }
+                        .sticky-col-5 { left: 506px; width: 140px; min-width: 140px; max-width: 140px; }
+                    </style>
                     <div class="overflow-x-auto pb-4">
-                        <table class="min-w-full divide-y divide-gray-200 border">
+                        <table class="min-w-full divide-y divide-gray-200 border" style="border-collapse: separate; border-spacing: 0;">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrix Number</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" class="sticky-col sticky-col-1 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">#</th>
+                                    <th scope="col" class="sticky-col sticky-col-2 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Matrix Number</th>
+                                    <th scope="col" class="sticky-col sticky-col-3 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                                         <a href="{{ route('groups.show', ['group' => $group, 'filter' => request('filter'), 'sort' => request('sort') === 'name-asc' ? 'name-desc' : 'name-asc']) }}" class="flex items-center space-x-1 hover:text-gray-900 transition">
                                             <span>Name</span>
                                             @if(request('sort') === 'name-asc' || !request('sort'))
@@ -108,32 +117,38 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="sticky-col sticky-col-4 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Rate</th>
+                                    <th scope="col" class="sticky-col sticky-col-5 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Status</th>
                                     
                                     @foreach($sessions as $session)
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" title="{{ \Carbon\Carbon::parse($session->session_date)->format('M d, Y') }}">
-                                            Week {{ $session->week_number }}
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                            <div>Week {{ $session->week_number }}</div>
+                                            @if($session->session_date)
+                                                <div class="text-xs font-normal text-gray-400 mt-1">
+                                                    {{ \Carbon\Carbon::parse($session->session_date)->format('d/m/Y') }}
+                                                </div>
+                                            @endif
                                         </th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($students as $student)
-                                    <tr class="{{ $student->is_at_risk ? 'bg-red-50' : 'bg-green-50' }} hover:opacity-90 transition duration-150">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @php $rowBg = $student->is_at_risk ? 'bg-red-50' : 'bg-green-50'; @endphp
+                                    <tr class="{{ $rowBg }} hover:opacity-90 transition duration-150">
+                                        <td class="sticky-col sticky-col-1 {{ $rowBg }} px-4 py-4 whitespace-nowrap text-sm text-gray-500 border-b border-gray-200">
                                             {{ $loop->iteration }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }}">
+                                        <td class="sticky-col sticky-col-2 {{ $rowBg }} px-4 py-4 whitespace-nowrap text-sm font-medium {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }} border-b border-gray-200">
                                             {{ $student->matrix_number }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }}">
+                                        <td class="sticky-col sticky-col-3 {{ $rowBg }} px-4 py-4 text-sm {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }} border-b border-gray-200">
                                             {{ $student->name }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }}">
+                                        <td class="sticky-col sticky-col-4 {{ $rowBg }} px-4 py-4 whitespace-nowrap text-sm font-bold {{ $student->is_at_risk ? 'text-red-900' : 'text-green-900' }} border-b border-gray-200">
                                             {{ $student->attendance_rate }}%
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="sticky-col sticky-col-5 {{ $rowBg }} px-4 py-4 whitespace-nowrap border-b border-gray-200">
                                             @if($student->is_at_risk)
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
                                                     At-Risk

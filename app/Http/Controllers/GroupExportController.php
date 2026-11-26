@@ -78,7 +78,7 @@ class GroupExportController extends Controller
         $pdf = Pdf::loadView('groups.pdf', [
             'group' => $group,
             'sessions' => $group->attendanceSessions,
-            'students' => $group->students->sortBy('name')
+            'students' => $group->students->sortBy('name')->values()
         ])->setPaper('a4', 'landscape');
         
         $safeName = \Illuminate\Support\Str::slug($group->name, '_');

@@ -24,14 +24,19 @@
                 <th class="text-left">Name</th>
                 <th>Rate</th>
                 @foreach($sessions as $session)
-                    <th>W{{ $session->week_number }}</th>
+                    <th>
+                        W{{ $session->week_number }}
+                        @if($session->session_date)
+                            <br><span style="font-size: 9px; font-weight: normal; color: #6b7280;">{{ \Carbon\Carbon::parse($session->session_date)->format('d/m/Y') }}</span>
+                        @endif
+                    </th>
                 @endforeach
             </tr>
         </thead>
         <tbody>
-            @foreach($students as $index => $student)
+            @foreach($students as $student)
                 <tr>
-                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $loop->iteration }}</td>
                     <td class="text-left">{{ $student->matrix_number }}</td>
                     <td class="text-left {{ $student->is_at_risk ? 'at-risk' : '' }}">{{ $student->name }}</td>
                     <td class="{{ $student->is_at_risk ? 'at-risk' : '' }}">{{ $student->attendance_rate }}%</td>
